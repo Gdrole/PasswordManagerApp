@@ -2,14 +2,17 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator, NativeStackNavigationProp } from '@react-navigation/native-stack';
 import * as Pages from 'src/pages';
+import globalStyle from 'src/globalStyles';
 
 export type StackParams = {
     Main: undefined;
+    Passwords: undefined;
+    Create: undefined;
 };
 
 export type StackNavigation = NativeStackNavigationProp<StackParams>;
 
-const Stack = createNativeStackNavigator();
+const Stack = createNativeStackNavigator<StackParams>();
 
 export const AppNavigator = () => {
 
@@ -18,7 +21,18 @@ export const AppNavigator = () => {
             <Stack.Navigator
                 initialRouteName={'Main'}
                 screenOptions={{
-                    headerBackTitleVisible: false,
+                    headerStyle: {
+                        backgroundColor: globalStyle.colors.pageBackground,
+                        
+                    },
+                    headerTintColor: globalStyle.colors.primary,
+                    headerTitleStyle: {
+                        fontFamily: 'Roboto-Medium',
+                        color: globalStyle.colors.primary,
+                        fontSize: globalStyle.font.fontSize.large
+                    },
+                    headerTitleAlign: 'center',
+                    title: 'Vault'
                 }}
             >
                 <Stack.Screen
@@ -27,6 +41,16 @@ export const AppNavigator = () => {
                     options={{
                         header: () => null,
                     }}
+                />
+                <Stack.Screen
+                    name={'Passwords'}
+                    component={Pages.Passwords}
+
+                />
+                <Stack.Screen
+                    name={'Create'}
+                    component={Pages.Create}
+
                 />
             </Stack.Navigator>
         </NavigationContainer>

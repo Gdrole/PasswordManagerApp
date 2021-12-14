@@ -3,14 +3,16 @@ import Realm from 'realm';
 
 class Password extends Realm.Object {
   _id!: Realm.BSON.ObjectId;
-  note!: string;
   username!: string;
   password!: string;
-  salt!: string;
+  for!: string;
 
-  static generate() {
+  static generate(password: Partial<Password>) {
     return {
       _id: new Realm.BSON.ObjectId(),
+      username: password.username,
+      password: password.password,
+      for: password.for
     };
   }
 
@@ -20,10 +22,9 @@ class Password extends Realm.Object {
     primaryKey: '_id',
     properties: {
       _id: 'objectId',
-      note: 'string',
       username: 'string',
       password: 'string',
-      salt: 'string'
+      for: 'string'
     },
   };
 }

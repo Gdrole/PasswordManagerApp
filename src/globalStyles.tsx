@@ -2,7 +2,8 @@ const globalStyle = {
     colors: {
         pageBackground: '#212121',
         primary: '#14FFEC',
-
+        secondary: '#0D7377',
+        terciary: '#323232',
         transparentGrey: '#393e46',
         lightGrey: '#74777d',
         skyBlue: '#278ea5',
