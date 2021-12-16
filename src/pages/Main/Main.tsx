@@ -8,7 +8,7 @@ import globalStyle, { PAGE_SPACE } from "src/globalStyles";
 import { CommonActions, useNavigation } from "@react-navigation/native";
 import { RealmContext } from "src/modules/db";
 import RnHash, { CONSTANTS } from "react-native-hash";
-import { useEffect } from "react";
+import Hashing from "src/services/Hashing";
 
 interface Login {
 	username: string;
@@ -19,8 +19,6 @@ const Main: FC = () => {
 
 	const navigation = useNavigation();
 	const { openRealm } = useContext(RealmContext);
-
-
 
 	const { handleSubmit, control } = useForm({
 		mode: 'onSubmit',
@@ -40,7 +38,7 @@ const Main: FC = () => {
 
 			if (credentials) {
 
-				const hash = await RnHash.hashString(data.password, CONSTANTS.HashAlgorithms.sha512)
+				const hash = await Hashing.hashString(data.password, CONSTANTS.HashAlgorithms.sha512);
 
 				await openRealm(hash);
 
@@ -81,7 +79,7 @@ const Main: FC = () => {
 						field: { onChange, value },
 						fieldState: { error },
 					}) => (
-						<CustomInput errorMessage={error ? error.message : ''} onChangeText={onChange} value={value} placeholder={'Password'} autoCompleteType={'password'} />
+						<CustomInput secureTextEntry={true} errorMessage={error ? error.message : ''} onChangeText={onChange} value={value} placeholder={'Password'} autoCompleteType={'password'} />
 					)}
 				/>
 

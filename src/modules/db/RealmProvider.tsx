@@ -42,6 +42,7 @@ const RealmProvider = ({ children }: RealmProviderProps) => {
     };
 
     const realm = await Realm.open(config);
+
     const passwordResult: Realm.Results<Password> = realm.objects('Password');
     subscriptionRef.current = passwordResult;
     passwordResult.addListener((/*collection, changes*/) => {

@@ -59,7 +59,7 @@ const Passwords: FC = () => {
                                             {x.username}
                                         </Text>
                                         <Text style={{ color: globalStyle.colors.white, fontSize: globalStyle.font.fontSize.medium }}>
-                                            {x.password.replace(/./g, '*')}
+                                            {new Realm.BSON.ObjectId().toHexString().replace(/./g, '*')}
                                         </Text>
                                     </View>
                                     <MaterialCommunityIcons name={'trash-can-outline'} color={globalStyle.colors.crimsonRed} size={PAGE_SPACE * 2} onPress={() => onDeletePress(x._id)} />
