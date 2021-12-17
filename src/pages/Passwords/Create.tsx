@@ -43,15 +43,16 @@ const Create = () => {
 
 	const onAddPassword = async (data: PasswordForm) => {
 		try {
+
 			const salt = new Realm.BSON.ObjectId().toHexString();
-			const passwordHash = '';
+			const password = '';
 
 			if (realm) {
 				realm.write(async () => {
 
 					realm.create('Password', Password.generate({
 						salt: salt,
-						passwordHash,
+						password,
 						username: data.username,
 						for: data.for,
 						algorithm: data.algorithm
