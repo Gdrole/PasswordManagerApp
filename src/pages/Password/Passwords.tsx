@@ -3,7 +3,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React from 'react';
 import { useContext } from 'react';
 import { FC } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View, NativeModules } from "react-native";
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Page from "src/components/Page"
 import globalStyle, { PAGE_SPACE } from 'src/globalStyles';
@@ -13,9 +13,9 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import Password from 'src/modules/db/schemas/Password';
 import _sodium from 'libsodium-wrappers';
 import * as Keychain from 'react-native-keychain';
-import Hashing from 'src/services/Hashing';
-import { CONSTANTS } from 'react-native-hash';
 import Utils from 'src/services/Utils';
+
+var Aes = NativeModules.Aes;
 
 type PasswordsNavigationProp = NativeStackNavigationProp<
 	StackParams,
@@ -39,25 +39,31 @@ const Passwords: FC = () => {
 	const onShowPassword = async (pass: Password) => {
 
 		try {
-			
+
 			await _sodium.ready;
 			const sodium = _sodium;
-			
-			
-			const x = sodium.randombytes_buf(20);
-			console.log(sodium.to_hex(x));
 
 			const credentials = await Keychain.getGenericPassword();
 
 			if (credentials) {
 				const date = new Date();
+				const keySetupDate = new Date();
 
+				const key = await Aes.pbkdf2(credentials.password, '', 10000, 128);
+				// const key = await Aes.pbkdf2(credentials.password, '', 10000, 192);
+				// const key = await Aes.pbkdf2(credentials.password, '', 10000, 256);
+				console.log(`Key setup time: ${new Date().getMilliseconds() - keySetupDate.getMilliseconds()}ms`);
 
-				const hash = await Hashing.hashString(credentials.password, CONSTANTS.HashAlgorithms.sha256);
+				const password = await Aes.decrypt(pass.password, key, pass.nonce, 'aes-128-cbc');
+				// const password = await Aes.decrypt(pass.password, key, pass.nonce, 'aes-192-cbc');
+				// const password = await Aes.decrypt(pass.password, key, pass.nonce, 'aes-256-cbc');
 
-				const decryptedData = sodium.crypto_aead_xchacha20poly1305_ietf_decrypt(null, sodium.from_hex(pass.password), null, sodium.from_hex(pass.nonce), new Uint8Array(Utils.stringToBytes(hash)));
-				const password = sodium.to_string(decryptedData);
-				console.log(new Date().getMilliseconds() - date.getMilliseconds());
+				// const key = await Aes.pbkdf2(credentials.password, '', 10000, 256);
+				console.log(`Key setup time: ${new Date().getMilliseconds() - keySetupDate.getMilliseconds()}ms`);
+				// const password = sodium.to_string(sodium.crypto_aead_xchacha20poly1305_ietf_decrypt(null, sodium.from_hex(pass.password), null, sodium.from_hex(pass.nonce), new Uint8Array(Utils.stringToBytes(key))));
+
+				console.log(`Decryption time: ${new Date().getMilliseconds() - date.getMilliseconds()}ms`);
+
 				Alert.alert(
 					"Password",
 					password,
