@@ -6,7 +6,7 @@ class Password extends Realm.Object {
   username!: string;
   password!: string;
   algorithm!: string;
-  salt!: string;
+  nonce!: string;
   for!: string;
 
   static generate(password: Partial<Password>) {
@@ -15,7 +15,7 @@ class Password extends Realm.Object {
       username: password.username,
       password: password.password,
       algorithm: password.algorithm,
-      salt: password.salt,
+      nonce: password.nonce,
       for: password.for
     };
   }
@@ -29,7 +29,8 @@ class Password extends Realm.Object {
       username: 'string',
       algorithm: 'string',
       password: 'string',
-      for: 'string'
+      for: 'string',
+      nonce: 'string'
     },
   };
 }

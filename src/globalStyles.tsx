@@ -12,7 +12,8 @@ const globalStyle = {
         black: '#000000',
         crimsonRed: '#DC143C',
         gray: '#666666',
-
+        green: '#388e3c',
+        orange: '#f57c00',
         lightShade: '#6c7683',
         veryLightShade: '#eeeff1'
     },

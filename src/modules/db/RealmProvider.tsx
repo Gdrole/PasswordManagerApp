@@ -10,13 +10,11 @@ type RealmProviderProps = {
 
 interface RealmContext {
   realm: Realm | null;
-  openRealm: (password: string) => Promise<void>;
   passwords: Realm.Results<Password> | [];
 };
 
 export const RealmContext = createContext<RealmContext>({
   realm: null,
-  openRealm: (password: string) => new Promise(resolve => { }),
   passwords: []
 });
 
@@ -30,15 +28,15 @@ const RealmProvider = ({ children }: RealmProviderProps) => {
   const subscriptionRef = useRef<Realm.Results<Password> | null>(null);
   const [passwords, setPasswords] = useState<Realm.Results<Password> | []>([]);
 
-  const openRealm = async (password: string): Promise<void> => {
+  const openRealm = useCallback(async (): Promise<void> => {
 
-    for (var bytes = [], c = 0; c < password.length; c += 2) {
-      bytes.push(parseInt(password.substr(c, 2), 16));
-    }
+    // for (var bytes = [], c = 0; c < password.length; c += 2) {
+    //   bytes.push(parseInt(password.substr(c, 2), 16));
+    // }
 
     const config: Realm.Configuration = {
       schema: [Password.schema],
-      encryptionKey: new Int8Array(bytes)
+      // encryptionKey: new Int8Array(bytes)
     };
 
     const realm = await Realm.open(config);
@@ -50,7 +48,7 @@ const RealmProvider = ({ children }: RealmProviderProps) => {
     });
 
     setRealm(realm);
-  };
+  }, [realm, setPasswords]);
 
   const closeRealm = useCallback((): void => {
     const subscription = subscriptionRef.current;
@@ -62,13 +60,14 @@ const RealmProvider = ({ children }: RealmProviderProps) => {
   }, [realm]);
 
   useEffect(() => {
+    openRealm();
+
     return closeRealm;
   }, []);
 
   return (
     <RealmContext.Provider value={{
       realm,
-      openRealm,
       passwords
     }}>{children}</RealmContext.Provider>
   );
