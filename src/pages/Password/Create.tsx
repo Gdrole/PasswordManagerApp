@@ -160,7 +160,7 @@ const Create: FC = () => {
 	}
 
 	return (
-		<Page>
+		<Page isLoading={isLoading}>
 			<View style={{ flex: 1 }}>
 				<Controller
 					control={control}
@@ -241,7 +241,7 @@ const Create: FC = () => {
 							<Slider
 								value={passwordLength}
 								onValueChange={setPasswordLength}
-								maximumValue={50}
+								maximumValue={40}
 								minimumValue={5}
 								step={1}
 								trackStyle={{ height: 10, backgroundColor: globalStyle.colors.primary }}
