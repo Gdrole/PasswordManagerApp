@@ -39,7 +39,7 @@ const Create: FC = () => {
 	const { realm } = useContext(RealmContext);
 
 	const [passwordLength, setPasswordLength] = useState(15);
-
+	const [isLoading, setIsLoading] = useState(false);
 	const [useSymbols, setUseSymbols] = useState(true);
 	const [isStrong, setIsStrong] = useState(true);
 
@@ -65,52 +65,31 @@ const Create: FC = () => {
 
 	const onAddPassword = async (data: PasswordForm) => {
 		try {
+			setIsLoading(true);
 			await _sodium.ready;
 			const sodium = _sodium;
 
 			const credentials = await Keychain.getGenericPassword();
 
 			if (credentials) {
-				const date = new Date();
-				const keySetupDate = new Date();
-				
-				const key = await Aes.pbkdf2(credentials.password, '', 10000, 128);
+				// const keySetupDate = new Date();		
+				// const key = await Aes.pbkdf2(credentials.password, '', 10000, 128);
 				// const key = await Aes.pbkdf2(credentials.password, '', 10000, 192);
 				// const key = await Aes.pbkdf2(credentials.password, '', 10000, 256);
-				console.log(`Key setup time: ${new Date().getMilliseconds() - keySetupDate.getMilliseconds()}ms`);
-
-				const iv = await Aes.randomKey(16);
-				const encryptedData = await Aes.encrypt(data.password, key, iv, 'aes-128-cbc');
+				// console.log(`Key setup time: ${new Date().getMilliseconds() - keySetupDate.getMilliseconds()}ms`);
+				// const date = new Date();
+				// const iv = await Aes.randomKey(16);
+				// const encryptedData = await Aes.encrypt(data.password, key, iv, 'aes-128-cbc');
 				// const encryptedData = await Aes.encrypt(data.password, key, iv, 'aes-192-cbc');
 				// const encryptedData = await Aes.encrypt(data.password, key, iv, 'aes-256-cbc');
-				console.log(`Encrpytion time: ${new Date().getMilliseconds() - date.getMilliseconds()}ms`);
-
-				if (realm) {
-					realm.write(async () => {
-
-						realm.create('Password', Password.generate({
-							nonce: iv,
-							password: encryptedData,
-							username: data.username,
-							for: data.for,
-							algorithm: data.algorithm
-						}));
-					});
-					navigation.goBack();
-				}
-
-				// const key = await Aes.pbkdf2(credentials.password, '', 10000, 256);
-				//console.log(`Key setup time: ${new Date().getMilliseconds() - keySetupDate.getMilliseconds()}ms`);
-				// const nonce = sodium.randombytes_buf(sodium.crypto_box_NONCEBYTES)
-				// const encryptedData = sodium.crypto_aead_xchacha20poly1305_ietf_encrypt(data.password, null, null, nonce, new Uint8Array(Utils.stringToBytes(key)));
-				//console.log(`Encrpytion time: ${new Date().getMilliseconds() - date.getMilliseconds()}ms`);
+				// console.log(`Encrpytion time: ${new Date().getMilliseconds() - date.getMilliseconds()}ms`);
 
 				// if (realm) {
 				// 	realm.write(async () => {
 
 				// 		realm.create('Password', Password.generate({
-				// 			nonce: sodium.to_hex(nonce),
-				// 			password: sodium.to_hex(encryptedData),
+				// 			nonce: iv,
+				// 			password: encryptedData,
 				// 			username: data.username,
 				// 			for: data.for,
 				// 			algorithm: data.algorithm
@@ -118,13 +97,37 @@ const Create: FC = () => {
 				// 	});
 				// 	navigation.goBack();
 				// }
+
+				const keySetupDate = new Date();	
+				const key = await Aes.pbkdf2(credentials.password, '', 10000, 256);
+				console.log(`Key setup time: ${new Date().getMilliseconds() - keySetupDate.getMilliseconds()}ms`);
+				const nonce = sodium.randombytes_buf(sodium.crypto_box_NONCEBYTES)
+				const date = new Date();
+				const encryptedData = sodium.crypto_aead_xchacha20poly1305_ietf_encrypt(data.password, null, null, nonce, new Uint8Array(Utils.stringToBytes(key)));
+				console.log(`Encrpytion time: ${new Date().getMilliseconds() - date.getMilliseconds()}ms`);
+
+				if (realm) {
+					realm.write(async () => {
+
+						realm.create('Password', Password.generate({
+							nonce: sodium.to_hex(nonce),
+							password: sodium.to_hex(encryptedData),
+							username: data.username,
+							for: data.for,
+							algorithm: data.algorithm
+						}));
+					});
+					navigation.goBack();
+				}
 			}
 		}
 		catch (e) {
 			console.log(e);
 			Alert.alert('Error', 'Failed to store password!');
 		}
-
+		finally {
+			setIsLoading(false);
+		}
 	}
 
 	const onRandomPress = async () => {

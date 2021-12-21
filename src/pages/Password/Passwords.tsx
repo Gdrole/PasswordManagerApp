@@ -1,6 +1,6 @@
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import React from 'react';
+import React, { useState } from 'react';
 import { useContext } from 'react';
 import { FC } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View, NativeModules } from "react-native";
@@ -25,7 +25,7 @@ type PasswordsNavigationProp = NativeStackNavigationProp<
 const Passwords: FC = () => {
 
 	const navigation = useNavigation<PasswordsNavigationProp>();
-
+	const [isLoading, setIsLoading] = useState(false);
 	const { passwords, realm } = useContext(RealmContext);
 
 	const onDeletePress = (id: Realm.BSON.ObjectId) => {
@@ -39,29 +39,31 @@ const Passwords: FC = () => {
 	const onShowPassword = async (pass: Password) => {
 
 		try {
-
+			setIsLoading(true);
 			await _sodium.ready;
 			const sodium = _sodium;
 
 			const credentials = await Keychain.getGenericPassword();
 
 			if (credentials) {
-				const date = new Date();
-				const keySetupDate = new Date();
-
-				const key = await Aes.pbkdf2(credentials.password, '', 10000, 128);
+				
+				// const keySetupDate = new Date();
+				// const key = await Aes.pbkdf2(credentials.password, '', 10000, 128);
 				// const key = await Aes.pbkdf2(credentials.password, '', 10000, 192);
 				// const key = await Aes.pbkdf2(credentials.password, '', 10000, 256);
-				console.log(`Key setup time: ${new Date().getMilliseconds() - keySetupDate.getMilliseconds()}ms`);
-
-				const password = await Aes.decrypt(pass.password, key, pass.nonce, 'aes-128-cbc');
+				// console.log(`Key setup time: ${new Date().getMilliseconds() - keySetupDate.getMilliseconds()}ms`);
+				
+				// const date = new Date();
+				// const password = await Aes.decrypt(pass.password, key, pass.nonce, 'aes-128-cbc');
 				// const password = await Aes.decrypt(pass.password, key, pass.nonce, 'aes-192-cbc');
 				// const password = await Aes.decrypt(pass.password, key, pass.nonce, 'aes-256-cbc');
+				// console.log(`Decryption time: ${new Date().getMilliseconds() - date.getMilliseconds()}ms`);
 
-				// const key = await Aes.pbkdf2(credentials.password, '', 10000, 256);
+				const keySetupDate = new Date();
+				const key = await Aes.pbkdf2(credentials.password, '', 10000, 256);
 				console.log(`Key setup time: ${new Date().getMilliseconds() - keySetupDate.getMilliseconds()}ms`);
-				// const password = sodium.to_string(sodium.crypto_aead_xchacha20poly1305_ietf_decrypt(null, sodium.from_hex(pass.password), null, sodium.from_hex(pass.nonce), new Uint8Array(Utils.stringToBytes(key))));
-
+				const date = new Date();
+				const password = sodium.to_string(sodium.crypto_aead_xchacha20poly1305_ietf_decrypt(null, sodium.from_hex(pass.password), null, sodium.from_hex(pass.nonce), new Uint8Array(Utils.stringToBytes(key))));
 				console.log(`Decryption time: ${new Date().getMilliseconds() - date.getMilliseconds()}ms`);
 
 				Alert.alert(
@@ -80,10 +82,13 @@ const Passwords: FC = () => {
 			console.log(e);
 			Alert.alert('Error', 'Failed to reveal password!');
 		}
+		finally {
+			setIsLoading(false);
+		}
 	}
 
 	return (
-		<Page noMargin={true}>
+		<Page noMargin={true} isLoading={isLoading}>
 			<ScrollView style={{ padding: PAGE_SPACE }}>
 				{
 					passwords.map((x, index) => {
